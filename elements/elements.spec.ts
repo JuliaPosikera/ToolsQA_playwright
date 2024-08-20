@@ -470,3 +470,46 @@ test.describe("Upload and Download", () => {
     await expect(page.getByText("C:\\fakepath\\forms.spec.ts")).toBeVisible();
   });
 });
+
+test.describe("Dynamic Properties", () => {
+  test.beforeEach(async ({ page }) => {
+    await page
+      .locator("li")
+      .getByText("Dynamic Properties", { exact: true })
+      .click();
+  });
+
+  test("should navigate to '/dynamic-properties' url", async ({ page }) => {
+    expect(page.url()).toContain("/dynamic-properties");
+  });
+
+  test("should correct work with button, that will enabled afted some time", async ({
+    page,
+  }) => {
+    const button = page.getByRole("button", { name: "Will enable 5 seconds" });
+    expect(button).toBeDisabled();
+    await page.waitForTimeout(5000);
+    expect(button).toBeEnabled();
+  });
+
+  test("should correct work with button, that change color after some time", async ({
+    page,
+  }) => {
+    const button = page.getByRole("button", { name: "Color Change" });
+
+    expect(button).not.toHaveClass(/text-danger/);
+    await page.waitForTimeout(5000);
+    expect(button).toHaveClass(/text-danger/);
+  });
+
+  test("should correct work with button, that visible after some time", async ({
+    page,
+  }) => {
+    const button = page.getByRole("button", {
+      name: "Visible After 5 Seconds",
+    });
+    expect(button).not.toBeVisible();
+    await page.waitForTimeout(5000);
+    expect(button).toBeVisible();
+  });
+});

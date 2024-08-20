@@ -1,4 +1,5 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page, Locator } from "@playwright/test";
+import path from "path";
 
 test.beforeEach(async ({ page, isMobile }) => {
   test.fixme(isMobile, "Settings page does not work in mobile yet");
@@ -274,5 +275,198 @@ test.describe("Web Tables", () => {
     await page.getByPlaceholder("Type to search").fill(TestData.email);
     let gridrow = page.getByRole("row", { name: TestData.firstName });
     await expect(gridrow).toBeVisible();
+  });
+});
+
+test.describe("Buttons", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.locator("li").filter({ hasText: "Buttons" }).click();
+  });
+
+  test("should navigate to '/buttons' url", async ({ page }) => {
+    expect(page.url()).toContain("/buttons");
+  });
+  test("should can double click button", async ({ page }) => {
+    const button = page.getByRole("button", { name: "Double Click Me" });
+    await button.click();
+    expect(page.getByText("You have done a double click")).not.toBeVisible();
+    await button.click({ button: "right" });
+    expect(page.getByText("You have done a double click")).not.toBeVisible();
+    await button.dblclick();
+    expect(page.getByText("You have done a double click")).toBeVisible();
+  });
+  test("should can right click button", async ({ page }) => {
+    const button = page.getByRole("button", { name: "Right Click Me" });
+    await button.click();
+    await expect(
+      page.getByText("You have done a right click")
+    ).not.toBeVisible();
+    await button.dblclick();
+    await expect(
+      page.getByText("You have done a right click")
+    ).not.toBeVisible();
+    await button.click({ button: "right" });
+    await expect(page.getByText("You have done a right click")).toBeVisible();
+  });
+
+  test("should can click 'click me' button", async ({ page }) => {
+    const button = page.getByRole("button", { name: "Click Me", exact: true });
+    await button.click({ button: "right" });
+    await expect(
+      page.getByText("You have done a dynamic click")
+    ).not.toBeVisible();
+    await button.click();
+    await expect(page.getByText("You have done a dynamic click")).toBeVisible();
+  });
+});
+
+test.describe("Links", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.locator("li").getByText("Links", { exact: true }).click();
+  });
+
+  test("should navigate to '/links' url", async ({ page }) => {
+    expect(page.url()).toContain("/links");
+  });
+
+  test("redirect by link to home page", async ({ page }) => {
+    const [newPage] = await Promise.all([
+      page.waitForEvent("popup"),
+      page.getByRole("link", { exact: true, name: "Home" }).click(),
+    ]);
+    await expect(newPage).toHaveURL("https://demoqa.com/");
+  });
+  test("redirect by link to home page by Homen__ link", async ({ page }) => {
+    const [newPage] = await Promise.all([
+      page.waitForEvent("popup"),
+      page.locator("#dynamicLink").click(),
+    ]);
+
+    await expect(newPage).toHaveURL("https://demoqa.com/");
+  });
+  test("should be  201 response with Created ", async ({ page }) => {
+    const [response] = await Promise.all([
+      page.waitForResponse("https://demoqa.com/created"),
+      page.getByText("Created").click(),
+    ]);
+    expect(response.status()).toBe(201);
+    expect(response.statusText()).toEqual("Created");
+  });
+  test("should be  204 response with No Content ", async ({ page }) => {
+    const [response] = await Promise.all([
+      page.waitForResponse("https://demoqa.com/no-content"),
+      page.getByText("No Content").click(),
+    ]);
+    expect(response.status()).toBe(204);
+    expect(response.statusText()).toEqual("No Content");
+  });
+  test("should be  204 response with Moved ", async ({ page }) => {
+    const [response] = await Promise.all([
+      page.waitForResponse("https://demoqa.com/moved"),
+      page.getByText("Moved").click(),
+    ]);
+    expect(response.status()).toBe(301);
+    expect(response.statusText()).toEqual("Moved Permanently");
+  });
+});
+
+test.describe("Broken links and images ", () => {
+  test.beforeEach(async ({ page }) => {
+    await page
+      .locator("li")
+      .getByText("Broken Links - Images", { exact: true })
+      .click();
+  });
+
+  test("should navigate to '/broken' url", async ({ page }) => {
+    expect(page.url()).toContain("/broken");
+  });
+
+  test("check if image is downloaded", async ({ page }) => {
+    await page.waitForLoadState("domcontentloaded");
+    const validImage = page.locator('p:has-text("Valid image") + img');
+    const imgSrc = await validImage.getAttribute("src");
+    expect(imgSrc?.length).toBeGreaterThan(1);
+    const res = await page.request.get(
+      `https://demoqa.com${imgSrc}?nocache=${Date.now()}`
+    );
+    expect(res.status()).toBe(200);
+    const contentType = res.headers()["content-type"];
+    expect(contentType).toBe("image/jpeg");
+  });
+  test("check if image is not downloaded", async ({ page }) => {
+    async function checkIfImageIsFine(page: Page, image: Locator) {
+      const brokenImage = page.locator('p:has-text("Broken image") + img');
+      await checkIfImageIsFine(page, brokenImage);
+      const imgSrc = await brokenImage.getAttribute("src");
+      expect(imgSrc?.length).toBeGreaterThan(1);
+      const res = await page.request.get(
+        `https://demoqa.com${imgSrc}?nocache=${Date.now()}`
+      );
+      expect(res.status()).toBe(200);
+      const contentType = res.headers()["content-type"];
+      expect(contentType).not.toBe("image/jpeg");
+    }
+  });
+  test("check if link is valid", async ({ page }) => {
+    await page.waitForLoadState("domcontentloaded");
+    const validImage = page.locator('p:has-text("Valid Link") + a');
+    const linkHref = await validImage.getAttribute("href");
+    expect(linkHref?.length).toBeGreaterThan(1);
+    if (linkHref) {
+      const res = await page.request.get(linkHref);
+      expect(res.status()).toBe(200);
+    }
+  });
+  test("check if link is not valid", async ({ page }) => {
+    await page.waitForLoadState("domcontentloaded");
+    const validImage = page.locator('p:has-text("Broken Link") + a');
+    const linkHref = await validImage.getAttribute("href");
+    expect(linkHref?.length).toBeGreaterThan(1);
+    if (linkHref) {
+      const res = await page.request.get(linkHref);
+      expect(res.status()).not.toBe(200);
+    }
+  });
+});
+test.describe("Upload and Download", () => {
+  test.beforeEach(async ({ page }) => {
+    await page
+      .locator("li")
+      .getByText("Upload and Download", { exact: true })
+      .click();
+  });
+
+  test("should navigate to '/upload-download' url", async ({ page }) => {
+    expect(page.url()).toContain("/upload-download");
+  });
+
+  test("correct download by clicking the button", async ({ page }) => {
+    const button = page.getByRole("link", { name: "Download" });
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      button.click(),
+    ]);
+
+    const downloadPath = await download.path();
+    expect(downloadPath).toBeTruthy();
+    const fs = require("fs");
+    expect(fs.existsSync(downloadPath)).toBe(true);
+    const fileStats = fs.statSync(downloadPath);
+    expect(fileStats.size).toBeGreaterThan(0);
+  });
+  test("upload by clicking the button", async ({ page }) => {
+    const filePath = path.resolve(__dirname, "alerts.spec.ts");
+    await page.getByLabel("Select a file").click();
+    await page.getByLabel("Select a file").setInputFiles(filePath);
+    await expect(page.getByText("C:\\fakepath\\alerts.spec.ts")).toBeVisible();
+    const newfilePath = path.resolve(__dirname, "forms.spec.ts");
+    await page.getByLabel("Select a file").click();
+    await page.getByLabel("Select a file").setInputFiles(newfilePath);
+    await expect(
+      page.getByText("C:\\fakepath\\alerts.spec.ts")
+    ).not.toBeVisible();
+    await expect(page.getByText("C:\\fakepath\\forms.spec.ts")).toBeVisible();
   });
 });

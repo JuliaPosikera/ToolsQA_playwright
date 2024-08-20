@@ -11,17 +11,19 @@ Before running the tests, ensure that you have the following installed on your m
 - [Node.js](https://nodejs.org/) (version 12 or higher)
 - [Playwright](https://playwright.dev/)
 
+## Running the Tests
 
-Running the Tests
 To run all tests, use the following command:
- ```
+
+```
 npx playwright test
 ```
+
 Reporting
 Playwright generates test reports automatically. After running the tests, you can view the report by opening the following file in your browser:
 
- ```
+```
 npx playwright show-report
- ```
+```
 
-This README provides a comprehensive guide for setting up, running, and contributing to the automated testing project for the https://demoqa.com website using Playwright. Happy testing!
+### This README provides a comprehensive guide for setting up, running, and contributing to the automated testing project for the https://demoqa.com website using Playwright. Happy testing!

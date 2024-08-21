@@ -335,6 +335,7 @@ test.describe("Links", () => {
       page.getByRole("link", { exact: true, name: "Home" }).click(),
     ]);
     await expect(newPage).toHaveURL("https://demoqa.com/");
+    await newPage.close();
   });
   test("redirect by link to home page by Homen__ link", async ({ page }) => {
     const [newPage] = await Promise.all([
@@ -343,6 +344,7 @@ test.describe("Links", () => {
     ]);
 
     await expect(newPage).toHaveURL("https://demoqa.com/");
+    await newPage.close();
   });
   test("should be  201 response with Created ", async ({ page }) => {
     const [response] = await Promise.all([

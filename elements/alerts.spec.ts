@@ -87,14 +87,14 @@ test.describe("Alerts, Frame & Windows", () => {
         expect(dialog.type()).toBe("confirm");
         expect(dialog.message()).toBe("Do you confirm action?");
         await dialog.dismiss();
-        expect(page.getByText("You selected Cancel")).toBeVisible();
+        await expect(page.getByText("You selected Cancel")).toBeVisible();
       });
       await page.locator("#confirmButton").click();
       page.once("dialog", async (dialog: Dialog) => {
         expect(dialog.type()).toBe("confirm");
         expect(dialog.message()).toBe("Do you confirm action?");
         await dialog.accept();
-        expect(page.getByText("You selected OK")).toBeVisible();
+        await expect(page.getByText("You selected OK")).toBeVisible();
       });
       await page.locator("#confirmButton").click();
     });
@@ -106,7 +106,7 @@ test.describe("Alerts, Frame & Windows", () => {
         await dialog.accept("Test Data");
       });
       await page.locator("#promtButton").click();
-      expect(page.getByText("You entered Test Data")).toBeVisible();
+      await expect(page.getByText("You entered Test Data")).toBeVisible();
 
       //Update
       page.once("dialog", async (dialog: Dialog) => {
@@ -114,7 +114,7 @@ test.describe("Alerts, Frame & Windows", () => {
         await dialog.accept("New Test Data");
       });
       await page.locator("#promtButton").click();
-      expect(page.getByText("You entered New Test Data")).not.toBeVisible();
+      await expect(page.getByText("You entered New Test Data")).toBeVisible();
 
       // Delete
       page.once("dialog", async (dialog: Dialog) => {
@@ -122,7 +122,7 @@ test.describe("Alerts, Frame & Windows", () => {
         await dialog.accept();
       });
       await page.locator("#promtButton").click();
-      expect(page.getByText("You entered Test Data")).not.toBeVisible();
+      await expect(page.getByText("You entered Test Data")).not.toBeVisible();
     });
   });
 

@@ -289,11 +289,15 @@ test.describe("Buttons", () => {
   test("should can double click button", async ({ page }) => {
     const button = page.getByRole("button", { name: "Double Click Me" });
     await button.click();
-    expect(page.getByText("You have done a double click")).not.toBeVisible();
+    await expect(
+      page.getByText("You have done a double click")
+    ).not.toBeVisible();
     await button.click({ button: "right" });
-    expect(page.getByText("You have done a double click")).not.toBeVisible();
+    await expect(
+      page.getByText("You have done a double click")
+    ).not.toBeVisible();
     await button.dblclick();
-    expect(page.getByText("You have done a double click")).toBeVisible();
+    await expect(page.getByText("You have done a double click")).toBeVisible();
   });
   test("should can right click button", async ({ page }) => {
     const button = page.getByRole("button", { name: "Right Click Me" });
@@ -489,9 +493,9 @@ test.describe("Dynamic Properties", () => {
     page,
   }) => {
     const button = page.getByRole("button", { name: "Will enable 5 seconds" });
-    expect(button).toBeDisabled();
+    await expect(button).toBeDisabled();
     await page.waitForTimeout(5000);
-    expect(button).toBeEnabled();
+    await expect(button).toBeEnabled();
   });
 
   test("should correct work with button, that change color after some time", async ({
@@ -499,9 +503,9 @@ test.describe("Dynamic Properties", () => {
   }) => {
     const button = page.getByRole("button", { name: "Color Change" });
 
-    expect(button).not.toHaveClass(/text-danger/);
+    await expect(button).not.toHaveClass(/text-danger/);
     await page.waitForTimeout(5000);
-    expect(button).toHaveClass(/text-danger/);
+    await expect(button).toHaveClass(/text-danger/);
   });
 
   test("should correct work with button, that visible after some time", async ({
@@ -510,8 +514,8 @@ test.describe("Dynamic Properties", () => {
     const button = page.getByRole("button", {
       name: "Visible After 5 Seconds",
     });
-    expect(button).not.toBeVisible();
+    await expect(button).not.toBeVisible();
     await page.waitForTimeout(5000);
-    expect(button).toBeVisible();
+    await expect(button).toBeVisible();
   });
 });

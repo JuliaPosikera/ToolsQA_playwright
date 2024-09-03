@@ -120,6 +120,9 @@ test.describe("Interactions", () => {
     test.beforeEach(async ({ page }) => {
       await page.getByText("Droppable").click();
     });
+    test.use({
+      viewport: { width: 1600, height: 1200 },
+    });
 
     test("Simple element shoud dropped to another, and styles of second element changed correctly", async ({
       page,
@@ -238,7 +241,7 @@ test.describe("Interactions", () => {
       const newBox = await willRevertElement.boundingBox();
       expect(box).toEqual(newBox);
     });
-    test("element 'Will revert' should stay at new position after drop", async ({
+    test("element 'Not revert' should stay at new position after drop", async ({
       page,
     }) => {
       await page.getByRole("tab", { name: "Revert Draggable" }).click();
@@ -257,46 +260,61 @@ test.describe("Interactions", () => {
     test.beforeEach(async ({ page }) => {
       await page.getByText("Dragabble").click();
     });
+    test.use({
+      viewport: { width: 1600, height: 1200 },
+    });
 
     test("simple element should be draggable", async ({ page }) => {
       await page.getByRole("tab", { name: "Simple" }).click();
       const dragabbleElement = page.locator("#dragBox");
       await dragabbleElement.hover();
+      console.log(await dragabbleElement.boundingBox({ timeout: 1000 }));
       await page.mouse.down();
-      await page.mouse.move(900, 800);
-      const box = await dragabbleElement.boundingBox();
-      expect(Math.round(box!.x + box!.width / 2)).toEqual(900);
-      expect(Math.round(box!.y + box!.height)).toEqual(800);
+      await page.mouse.move(400, 400);
+      const box = await dragabbleElement.boundingBox({ timeout: 1000 });
+      console.log(box);
+      expect(Math.round(box!.x + box!.width / 2)).toEqual(400);
+      expect(Math.round(box!.y + box!.height)).toEqual(420);
     });
     test("axis restricted X element should be draggable only by X axis ", async ({
       page,
     }) => {
       await page.getByRole("tab", { name: "Axis Restricted" }).click();
       const dragabbleElementX = page.locator("#restrictedX");
-      const firstPosition = await dragabbleElementX.boundingBox();
+      const firstPosition = await dragabbleElementX.boundingBox({
+        timeout: 1000,
+      });
       console.log(firstPosition);
       await dragabbleElementX.hover();
       await page.mouse.down();
-      await page.mouse.move(900, 900);
-
-      await page.waitForTimeout(1000);
-      const lastPosition = await dragabbleElementX.boundingBox();
+      await page.mouse.move(400, 400);
+      const lastPosition = await dragabbleElementX.boundingBox({
+        timeout: 1000,
+      });
       console.log(lastPosition);
-
-      expect(Math.round(lastPosition!.x)).toEqual(850);
-      expect(Math.round(lastPosition!.y)).toEqual(firstPosition?.y);
+      expect(Math.round(lastPosition!.x)).toEqual(350);
+      expect(Math.round(lastPosition!.y)).toEqual(firstPosition!.y);
     });
     test("axis restricted Y element should be draggable only by Y axis ", async ({
       page,
     }) => {
       await page.getByRole("tab", { name: "Axis Restricted" }).click();
-      const dragabbleElement = page.locator("#restrictedX");
-      //   await dragabbleElement.hover();
-      //   await page.mouse.down();
-      //   await page.mouse.move(900, 800);
-      const box = await dragabbleElement.boundingBox();
-      expect(Math.round(box!.x + box!.width / 2)).toEqual(900);
-      expect(Math.round(box!.y + box!.height)).toEqual(800);
+      const dragabbleElementX = page.locator("#restrictedY");
+      const firstPosition = await dragabbleElementX.boundingBox({
+        timeout: 1000,
+      });
+      console.log(firstPosition);
+      await dragabbleElementX.hover();
+      await page.mouse.down();
+      await page.mouse.move(200, 200);
+
+      const lastPosition = await dragabbleElementX.boundingBox({
+        timeout: 1000,
+      });
+      console.log(lastPosition);
+
+      expect(Math.round(lastPosition!.y)).toEqual(180);
+      expect(Math.round(lastPosition!.x)).toEqual(Math.round(firstPosition!.x));
     });
   });
 });
